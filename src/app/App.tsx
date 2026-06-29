@@ -933,6 +933,10 @@ function Contact() {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
+  useEffect(() => {
+    document.title = "Raflie Nurivansyah's Portfolio";
+  }, []);
+
   return (
     <div style={{ background: C.bg, color: C.text, minHeight: "100vh", overflowX: "hidden" }}>
       <style>{STYLES}</style>
