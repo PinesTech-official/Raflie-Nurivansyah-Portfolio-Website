@@ -1,0 +1,40 @@
+/* ── Sticky action column for all admin tables ── */
+.admin-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+.admin-table-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+.admin-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.admin-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* Sticky last column */
+.admin-table .sticky-col {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: #ffffff;
+  box-shadow: -3px 0 8px rgba(0, 0, 0, 0.07);
+}
+.admin-table thead .sticky-col {
+  background: #f8fafc;
+  z-index: 4;
+}
+/* Row hover updates sticky cell background */
+.admin-table tbody tr:hover .sticky-col {
+  background: #f9fafb;
+}
+/* Disbursed row (seller) */
+.admin-table tbody tr.row-disbursed .sticky-col {
+  background: #f0fdf4;
+}
+.admin-table tbody tr.row-disbursed:hover .sticky-col {
+  background: #f0fdf4;
+}
