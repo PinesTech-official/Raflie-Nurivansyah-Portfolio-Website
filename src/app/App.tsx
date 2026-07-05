@@ -97,6 +97,11 @@ const STYLES = `
     margin-bottom: 64px;
   }
 
+  /* TA Modal */
+  .f-ta-content  { padding: 28px 28px 40px; }
+  .f-ta-hdr      { padding: 20px 28px; }
+  .f-ta-stats    { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+
   /* ── Tablet: ≤ 900px ─────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .f-section { padding: 64px clamp(20px, 5vw, 48px); }
@@ -136,6 +141,8 @@ const STYLES = `
 
     .f-nav-links { display: none; }
     .f-nav-burger { display: flex; flex-direction: column; gap: 5px; }
+
+    .f-ta-stats { grid-template-columns: repeat(2, 1fr); }
   }
 
   /* ── Mobile: ≤ 600px ──────────────────────────────────────────────────────── */
@@ -144,14 +151,16 @@ const STYLES = `
 
     .f-stats { grid-template-columns: 1fr; }
 
-    .f-hero-photo {
-      width: 120px;
-    }
+    .f-hero-photo { width: 120px; }
 
     .f-exp-body { padding-left: 16px; padding-bottom: 24px; }
 
     .f-contact-btns { flex-direction: column; align-items: stretch; }
     .f-contact-btns a { justify-content: center; }
+
+    .f-ta-content { padding: 16px 16px 32px; }
+    .f-ta-hdr     { padding: 14px 16px; }
+    .f-ta-stats   { grid-template-columns: repeat(2, 1fr); }
   }
 `;
 
@@ -702,11 +711,250 @@ const projects = [
   },
 ];
 
+// ── TA Detail Modal ───────────────────────────────────────────────────────────
+const TA_DRIVES = [
+  { label: "📁 Dokumentasi Pengerjaan", url: "https://drive.google.com/drive/folders/1S7NoR088X5DaCdLxzM2XtHSusuFoiayk" },
+  { label: "📊 Rekap Data Pengujian",    url: "https://drive.google.com/drive/folders/1yPCkfyzhHui20bvpzhG-B7z8Vre1P7Na" },
+  { label: "💻 Code Autopong",           url: "https://drive.google.com/drive/folders/1gcDdH9tvrbBjdR87syKsXYxbO97XCsRt" },
+];
+
+function TAModal({ onClose }: { onClose: () => void }) {
+  const EE = { bg: "#050f08", surface: "#0a1a0e", accent: "#00d4aa", dim: "#7ecfb2", border: "rgba(0,212,170,0.15)" };
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}>
+      <div className="sm:rounded-3xl" style={{
+        background: EE.bg, width: "100%", maxWidth: 720, borderRadius: "1.5rem 1.5rem 0 0",
+        maxHeight: "92vh", overflowY: "auto",
+        border: `1px solid ${EE.accent}30`,
+        boxShadow: `0 0 60px ${EE.accent}18`,
+      }}>
+        {/* Header */}
+        <div className="f-ta-hdr" style={{
+          borderBottom: `1px solid ${EE.border}`,
+          background: `linear-gradient(135deg, ${EE.surface} 0%, #0d1f12 100%)`,
+          position: "sticky", top: 0, zIndex: 10,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        }}>
+          <div>
+            <span style={{ ...sans, fontSize: "0.65rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.5 }}>
+              Tugas Akhir<br />Politeknik Negeri Madura · 2026
+            </span>
+          </div>
+          <button onClick={onClose}
+            style={{ background: "rgba(0,212,170,0.1)", border: `1px solid ${EE.accent}30`, borderRadius: 8, padding: "6px 12px", cursor: "pointer", ...sans, fontSize: "0.78rem", color: EE.accent, fontWeight: 600 }}>
+            Tutup ✕
+          </button>
+        </div>
+
+        <div className="f-ta-content">
+          {/* Title */}
+          <h2 style={{ ...display, fontSize: "clamp(1.3rem, 3vw, 1.9rem)", fontWeight: 400, color: "#e8f8f2", lineHeight: 1.25, marginBottom: 8, letterSpacing: "0em" }}>
+            Rancang Bangun Pelontar Bola Tenis Meja Otomatis Berbasis Arduino Yang Diintegrasikan Dengan Siaran Langsung <em style={{ fontStyle: "italic", color: EE.accent }}>TikTok</em> Sebagai Trigger
+          </h2>
+          <p style={{ ...sans, fontSize: "0.78rem", color: EE.dim, marginBottom: 24 }}>
+            Raflie Nurivansyah · NRP 33112101044 · D3 Teknik Listrik Industri — POLTERA Sampang
+          </p>
+
+          {/* Supervisor */}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+            {["Pembimbing I: A Labib Fardany Faisal, M.T.I.", "Pembimbing II: Muhammad Nur, S.Si., M.T."].map((s) => (
+              <span key={s} style={{ ...sans, fontSize: "0.72rem", padding: "4px 12px", borderRadius: 8, background: EE.surface, color: EE.dim, border: `1px solid ${EE.border}` }}>{s}</span>
+            ))}
+          </div>
+
+          {/* Abstract */}
+          <div style={{ borderRadius: 14, padding: "18px 20px", background: EE.surface, border: `1px solid ${EE.border}`, marginBottom: 24 }}>
+            <p style={{ ...sans, fontSize: "0.72rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Abstrak</p>
+            <p style={{ ...sans, fontSize: "0.9rem", color: EE.dim, lineHeight: 1.8 }}>
+              Penelitian ini merancang dan membangun pelontar bola tenis meja otomatis (<strong style={{ color: "#e8f8f2" }}>Autopong</strong>) berbasis mikrokontroler yang diintegrasikan dengan siaran langsung <strong style={{ color: "#e8f8f2" }}>TikTok Live</strong> sebagai trigger. Sistem merespons event gift TikTok secara real-time melalui protokol komunikasi <strong style={{ color: "#e8f8f2" }}>MQTT</strong>, mengendalikan motor pelontar bola sesuai perintah yang diterima.
+            </p>
+          </div>
+
+          {/* Stats */}
+          <div className="f-ta-stats">
+            {[
+              { value: "91.35%", label: "Tingkat Keberhasilan Like", sub: "190/208 data dieksekusi" },
+              { value: "100%",   label: "Akurasi Gift 1 & 20 Koin", sub: "0 data loss" },
+              { value: "5.13s",  label: "Avg Response Time", sub: "Data Like (tercepat)" },
+              { value: "3 det",  label: "Durasi Kerja per Gift", sub: "Motor pelontar aktif" },
+            ].map(({ value, label, sub }) => (
+              <div key={label} style={{ borderRadius: 12, padding: "14px 16px", background: EE.surface, border: `1px solid ${EE.border}`, textAlign: "center" }}>
+                <p style={{ ...display, fontSize: "1.5rem", fontWeight: 400, color: EE.accent, lineHeight: 1 }}>{value}</p>
+                <p style={{ ...sans, fontSize: "0.72rem", fontWeight: 600, color: "#e8f8f2", marginTop: 6 }}>{label}</p>
+                <p style={{ ...sans, fontSize: "0.65rem", color: EE.dim, marginTop: 2 }}>{sub}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Hardware */}
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Komponen Hardware</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {["ESP32 / Arduino", "2× Motor DC (Fly-wheel + Feeder)", "MQTT Broker", "Relay Module", "Tabung Penyimpan Bola (Plastik)", "Tiang PVC", "Power Supply 24V", "TikTok Live API", "LED Indikator"].map((c) => (
+                <span key={c} style={{ ...sans, fontSize: "0.73rem", padding: "5px 12px", borderRadius: 8, background: "rgba(0,212,170,0.08)", color: EE.dim, border: `1px solid ${EE.border}` }}>{c}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* System Flow */}
+          <div style={{ borderRadius: 14, padding: "16px 20px", background: EE.surface, border: `1px solid ${EE.border}`, marginBottom: 24 }}>
+            <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Alur Sistem</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              {["TikTok Live Gift", "→", "MQTT Broker", "→", "ESP32", "→", "Relay Module", "→", "Motor Pelontar", "→", "Bola Dilontarkan"].map((step, i) => (
+                <span key={i} style={{
+                  ...sans, fontSize: "0.73rem", fontWeight: step === "→" ? 400 : 600,
+                  color: step === "→" ? EE.dim : "#e8f8f2",
+                  padding: step === "→" ? "0 2px" : "4px 10px",
+                  background: step === "→" ? "transparent" : "rgba(0,212,170,0.1)",
+                  borderRadius: step === "→" ? 0 : 6,
+                  border: step === "→" ? "none" : `1px solid ${EE.border}`,
+                }}>{step}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Drive Links */}
+          <div>
+            <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Lampiran Proyek</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {TA_DRIVES.map((d) => (
+                <a key={d.label} href={d.url} target="_blank" rel="noopener"
+                  style={{
+                    ...sans, display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "12px 16px", borderRadius: 10,
+                    background: "rgba(0,212,170,0.07)", border: `1px solid ${EE.accent}25`,
+                    textDecoration: "none", color: EE.dim, fontSize: "0.88rem", fontWeight: 500,
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.14)")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.07)")}>
+                  {d.label}
+                  <span style={{ color: EE.accent, fontSize: "0.8rem" }}>↗</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── TA Card (featured in Projects) ───────────────────────────────────────────
+function TugasAkhirCard() {
+  const [hovered, setHovered] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const EE_BG = hovered
+    ? "linear-gradient(135deg, #050f08 0%, #0a1f0e 50%, #050f08 100%)"
+    : `linear-gradient(135deg, ${C.surface} 0%, #111820 100%)`;
+
+  const EE_ACCENT = "#00d4aa";
+  const EE_BORDER = hovered ? "rgba(0,212,170,0.35)" : C.border;
+
+  return (
+    <>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          borderRadius: 18, border: `1px solid ${EE_BORDER}`,
+          background: EE_BG,
+          padding: "clamp(24px, 3vw, 36px)",
+          marginBottom: 16,
+          position: "relative", overflow: "hidden",
+          transition: "border-color 0.3s, background 0.4s, box-shadow 0.3s",
+          boxShadow: hovered ? `0 0 40px rgba(0,212,170,0.1)` : "none",
+          cursor: "default",
+        }}>
+        {/* Circuit grid overlay when hovered */}
+        {hovered && (
+          <div style={{
+            position: "absolute", inset: 0, opacity: 0.04,
+            backgroundImage: "linear-gradient(rgba(0,212,170,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,170,1) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+            pointerEvents: "none",
+          }} />
+        )}
+
+        <div style={{ position: "relative", zIndex: 1 }}>
+          {/* Top row */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ ...sans, fontSize: "0.65rem", fontWeight: 700, color: EE_ACCENT, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 6, background: "rgba(0,212,170,0.1)", border: "1px solid rgba(0,212,170,0.2)" }}>
+                ⚡ Tugas Akhir
+              </span>
+              <span style={{ ...sans, fontSize: "0.65rem", fontWeight: 700, color: C.muted, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 6, background: C.lift, border: `1px solid ${C.border}` }}>
+                POLTERA · 2026
+              </span>
+            </div>
+            <button onClick={() => setShowModal(true)}
+              style={{
+                ...sans, display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "9px 18px", borderRadius: 10,
+                background: EE_ACCENT, color: "#050f08",
+                fontWeight: 700, fontSize: "0.82rem", border: "none", cursor: "pointer",
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
+              Detail ↗
+            </button>
+          </div>
+
+          {/* Title */}
+          <h3 style={{ ...display, fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", fontWeight: 400, color: hovered ? "#e8f8f2" : C.text, lineHeight: 1.3, marginBottom: 14, letterSpacing: "0em", transition: "color 0.3s" }}>
+            Rancang Bangun <em style={{ fontStyle: "italic", color: EE_ACCENT }}>Autopong</em> — Pelontar Bola Tenis Meja Otomatis Berbasis Arduino &amp; TikTok Live
+          </h3>
+
+          {/* Desc */}
+          <p style={{ ...sans, fontSize: "0.88rem", color: hovered ? "#7ecfb2" : C.dim, lineHeight: 1.75, marginBottom: 20, maxWidth: 680, transition: "color 0.3s" }}>
+            Sistem IoT yang mengintegrasikan siaran langsung TikTok Live sebagai trigger alat mekanis. Gift dari penonton memicu motor pelontar bola tenis meja secara otomatis melalui protokol MQTT dan mikrokontroler ESP32.
+          </p>
+
+          {/* Mini stats */}
+          <div style={{ display: "flex", gap: "clamp(12px, 3vw, 28px)", flexWrap: "wrap", marginBottom: 20 }}>
+            {[["91.35%", "Sukses Rate"], ["5.13s", "Avg Response"], ["100%", "Gift Accuracy"]].map(([v, l]) => (
+              <div key={l} style={{ textAlign: "center" }}>
+                <p style={{ ...display, fontSize: "1.2rem", fontWeight: 400, color: EE_ACCENT, lineHeight: 1 }}>{v}</p>
+                <p style={{ ...sans, fontSize: "0.65rem", color: C.muted, marginTop: 3 }}>{l}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Tags */}
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
+            {["Arduino", "ESP32", "MQTT", "TikTok API", "IoT", "Motor DC", "C++"].map((t) => (
+              <span key={t} style={{ ...sans, fontSize: "0.67rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, background: hovered ? "rgba(0,212,170,0.1)" : C.lift, color: hovered ? "#7ecfb2" : C.muted, border: `1px solid ${hovered ? "rgba(0,212,170,0.2)" : C.border}`, transition: "all 0.3s" }}>{t}</span>
+            ))}
+          </div>
+
+          {/* Drive links */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {TA_DRIVES.map((d) => (
+              <a key={d.label} href={d.url} target="_blank" rel="noopener"
+                style={{ ...sans, fontSize: "0.72rem", fontWeight: 600, padding: "5px 12px", borderRadius: 8, background: "rgba(0,212,170,0.08)", color: "#7ecfb2", border: "1px solid rgba(0,212,170,0.2)", textDecoration: "none", transition: "background 0.2s" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.16)")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.08)")}>
+                {d.label.split(" ").slice(0, 2).join(" ")} ↗
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {showModal && <TAModal onClose={() => setShowModal(false)} />}
+    </>
+  );
+}
+
 function Projects() {
   return (
     <section id="projects" style={{ borderTop: `1px solid ${C.border}` }}>
       <div className="f-section">
         <SectionLabel>Design Projects</SectionLabel>
+        <TugasAkhirCard />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
           {projects.map((p) => (
             <a key={p.number} href={p.url} target="_blank" rel="noopener" style={{ textDecoration: "none", display: "block" }}>
@@ -796,7 +1044,7 @@ function Education() {
               background: `radial-gradient(circle at top right, ${C.accent}10 0%, transparent 70%)`,
             }} />
             <div style={{ ...sans, fontSize: "0.68rem", fontWeight: 700, color: C.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>
-              Current · 2021 – Apr 2026
+              Current · 2021 – Present
             </div>
             <h3 style={{ ...display, fontSize: "clamp(1.05rem, 2.5vw, 1.4rem)", fontWeight: 400, color: C.text, lineHeight: 1.25, marginBottom: 8 }}>
               Madura State Polytechnic

@@ -1,7 +1,7 @@
 
-  # Admin Dashboard and Buyer Tabs (Copy)
+  # Portfolio
 
-  This is a code bundle for Admin Dashboard and Buyer Tabs (Copy). The original project is available at https://www.figma.com/design/HlhhSvtkvhSIlK6LMI1oR0/Admin-Dashboard-and-Buyer-Tabs--Copy-.
+  This is a code bundle for Portfolio. The original project is available at https://www.figma.com/design/HlhhSvtkvhSIlK6LMI1oR0/Portfolio.
 
   ## Running the code
 
