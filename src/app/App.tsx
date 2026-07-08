@@ -101,6 +101,8 @@ const STYLES = `
   .f-ta-content  { padding: 28px 28px 40px; }
   .f-ta-hdr      { padding: 20px 28px; }
   .f-ta-stats    { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  /* TA card top-row action buttons */
+  .f-ta-actions  { display: flex; gap: 8px; flex-wrap: wrap; }
 
   /* ── Tablet: ≤ 900px ─────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
@@ -712,6 +714,8 @@ const projects = [
 ];
 
 // ── TA Detail Modal ───────────────────────────────────────────────────────────
+const TA_PRESENTATION = { label: "🎯 Lihat Presentasi TA", url: "https://presentasi-ta.vercel.app/" };
+
 const TA_DRIVES = [
   { label: "📁 Dokumentasi Pengerjaan", url: "https://drive.google.com/drive/folders/1S7NoR088X5DaCdLxzM2XtHSusuFoiayk" },
   { label: "📊 Rekap Data Pengujian",    url: "https://drive.google.com/drive/folders/1yPCkfyzhHui20bvpzhG-B7z8Vre1P7Na" },
@@ -755,6 +759,25 @@ function TAModal({ onClose }: { onClose: () => void }) {
           <p style={{ ...sans, fontSize: "0.78rem", color: EE.dim, marginBottom: 24 }}>
             Raflie Nurivansyah · NRP 33112101044 · D3 Teknik Listrik Industri — POLTERA Sampang
           </p>
+
+          {/* Presentation CTA */}
+          <a href={TA_PRESENTATION.url} target="_blank" rel="noopener"
+            style={{
+              ...sans, display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "14px 20px", borderRadius: 12, marginBottom: 20,
+              background: "linear-gradient(135deg, rgba(0,212,170,0.18) 0%, rgba(0,212,170,0.08) 100%)",
+              border: "1px solid rgba(0,212,170,0.4)",
+              textDecoration: "none",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, rgba(0,212,170,0.28) 0%, rgba(0,212,170,0.14) 100%)")}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, rgba(0,212,170,0.18) 0%, rgba(0,212,170,0.08) 100%)")}>
+            <div>
+              <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: "rgba(0,212,170,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>Live Presentation</p>
+              <p style={{ ...sans, fontSize: "0.95rem", fontWeight: 600, color: "#e8f8f2" }}>{TA_PRESENTATION.label}</p>
+            </div>
+            <span style={{ fontSize: "1.3rem", color: "#00d4aa" }}>↗</span>
+          </a>
 
           {/* Supervisor */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
@@ -889,18 +912,33 @@ function TugasAkhirCard() {
                 POLTERA · 2026
               </span>
             </div>
-            <button onClick={() => setShowModal(true)}
-              style={{
-                ...sans, display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "9px 18px", borderRadius: 10,
-                background: EE_ACCENT, color: "#050f08",
-                fontWeight: 700, fontSize: "0.82rem", border: "none", cursor: "pointer",
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
-              Detail ↗
-            </button>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <a href={TA_PRESENTATION.url} target="_blank" rel="noopener"
+                style={{
+                  ...sans, display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "9px 18px", borderRadius: 10,
+                  background: EE_ACCENT, color: "#050f08",
+                  fontWeight: 700, fontSize: "0.82rem", textDecoration: "none",
+                  transition: "opacity 0.2s",
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
+                🎯 Presentasi ↗
+              </a>
+              <button onClick={() => setShowModal(true)}
+                style={{
+                  ...sans, display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "9px 18px", borderRadius: 10,
+                  background: "rgba(0,212,170,0.12)", color: EE_ACCENT,
+                  fontWeight: 600, fontSize: "0.82rem",
+                  border: "1px solid rgba(0,212,170,0.3)", cursor: "pointer",
+                  transition: "background 0.2s",
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.22)")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.12)")}>
+                Detail ↗
+              </button>
+            </div>
           </div>
 
           {/* Title */}
@@ -953,7 +991,7 @@ function Projects() {
   return (
     <section id="projects" style={{ borderTop: `1px solid ${C.border}` }}>
       <div className="f-section">
-        <SectionLabel>Design Projects</SectionLabel>
+        <SectionLabel>Projects</SectionLabel>
         <TugasAkhirCard />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 280px), 1fr))", gap: 16 }}>
           {projects.map((p) => (
