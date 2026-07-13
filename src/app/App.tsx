@@ -1,12 +1,14 @@
 /* MARKER-MAKE-KIT-INVOKED */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, createContext } from "react";
+import { Sun, Moon, ExternalLink } from "lucide-react";
 import { ImageWithFallback } from "./components/figma/ImageWithFallback";
 import photo1 from "../imports/IMG_2975.JPG";
 import photo2 from "../imports/eda86f7a-4ee2-46b0-9120-4c91a4668ef7.jpg";
 import photo3 from "../imports/IMG_2551.JPG";
+import logoTLI from "../imports/logo_TLI__2_-Photoroom.png";
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
+// ── Palettes ──────────────────────────────────────────────────────────────────
+const DARK = {
   bg:      "#0c0c10",
   surface: "#13131a",
   lift:    "#1a1a24",
@@ -17,21 +19,44 @@ const C = {
   accent:  "#818cf8",
   accentD: "#6366f1",
   green:   "#4ade80",
+  statsGap:"rgba(255,255,255,0.06)",
+  cardHover:"#15151e",
 };
 
+const LIGHT = {
+  bg:      "#f4f4fb",
+  surface: "#ffffff",
+  lift:    "#ebebf5",
+  border:  "rgba(0,0,0,0.08)",
+  text:    "#18182c",
+  muted:   "#9090b0",
+  dim:     "#5a5a72",
+  accent:  "#6366f1",
+  accentD: "#4f46e5",
+  green:   "#16a34a",
+  statsGap:"rgba(0,0,0,0.07)",
+  cardHover:"#f0f0fa",
+};
+
+type Palette = typeof DARK;
+
+// ── Theme context ─────────────────────────────────────────────────────────────
+const ThemeCtx = createContext<{ C: Palette; theme: "dark" | "light"; toggle: () => void }>({
+  C: DARK, theme: "dark", toggle: () => {},
+});
+const useTheme = () => useContext(ThemeCtx);
+
+// ── Font constants ─────────────────────────────────────────────────────────────
 const display: React.CSSProperties = { fontFamily: "'DM Serif Display', Georgia, serif" };
 const sans: React.CSSProperties    = { fontFamily: "'DM Sans', system-ui, sans-serif" };
 
 // ── Responsive CSS ────────────────────────────────────────────────────────────
 const STYLES = `
-  /* Section padding */
   .f-section {
     padding: 80px clamp(20px, 6vw, 100px);
     max-width: 1100px;
     margin: 0 auto;
   }
-
-  /* Hero two-col: text | photo */
   .f-hero-grid {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -44,21 +69,16 @@ const STYLES = `
     border-radius: 18px;
     overflow: hidden;
     flex-shrink: 0;
-    border: 1px solid rgba(255,255,255,0.06);
   }
-
-  /* Stats 3-col */
   .f-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1px;
     margin-top: 64px;
-    background: rgba(255,255,255,0.06);
     border-radius: 16px;
     overflow: hidden;
+    background: var(--stats-gap);
   }
-
-  /* Generic two-column section grid */
   .f-two-col {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -71,24 +91,15 @@ const STYLES = `
     gap: clamp(32px, 5vw, 72px);
     align-items: center;
   }
-
-  /* IISMA photos grid */
   .f-photos {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
     gap: 10px;
   }
-
-  /* Experience expanded indent */
   .f-exp-body { padding-left: 48px; padding-bottom: 32px; }
-
-  /* Nav desktop links visible */
   .f-nav-links { display: flex; gap: 32px; }
-  /* Nav burger hidden on desktop */
   .f-nav-burger { display: none; }
-
-  /* Contact buttons */
   .f-contact-btns {
     display: flex;
     gap: 12px;
@@ -96,78 +107,55 @@ const STYLES = `
     flex-wrap: wrap;
     margin-bottom: 64px;
   }
-
-  /* TA Modal */
   .f-ta-content  { padding: 28px 28px 40px; }
   .f-ta-hdr      { padding: 20px 28px; }
   .f-ta-stats    { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
-  /* TA card top-row action buttons */
   .f-ta-actions  { display: flex; gap: 8px; flex-wrap: wrap; }
 
-  /* ── Tablet: ≤ 900px ─────────────────────────────────────────────────────── */
+  /* Global smooth transitions */
+  button, a {
+    transition:
+      background 0.22s cubic-bezier(0.4,0,0.2,1),
+      color 0.22s cubic-bezier(0.4,0,0.2,1),
+      border-color 0.22s cubic-bezier(0.4,0,0.2,1),
+      opacity 0.22s cubic-bezier(0.4,0,0.2,1),
+      transform 0.22s cubic-bezier(0.4,0,0.2,1),
+      box-shadow 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ── Tablet ≤ 900px ────────────────────────────────────────────────────────── */
   @media (max-width: 900px) {
     .f-section { padding: 64px clamp(20px, 5vw, 48px); }
-
-    .f-hero-grid {
-      grid-template-columns: 1fr;
-    }
-    .f-hero-photo {
-      width: 160px;
-      aspect-ratio: 1/1;
-      border-radius: 50%;
-      margin: 0 auto;
-      order: -1;
-    }
-
+    .f-hero-grid { grid-template-columns: 1fr; }
+    .f-hero-photo { width: 160px; aspect-ratio: 1/1; border-radius: 50%; margin: 0 auto; order: -1; }
     .f-stats { grid-template-columns: 1fr 1fr; }
-
-    .f-two-col,
-    .f-two-col-center {
-      grid-template-columns: 1fr;
-      gap: 36px;
-    }
-
-    .f-photos {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
-    .f-photos > * {
-      flex: 0 0 160px;
-      height: 200px;
-      grid-column: unset !important;
-      grid-row: unset !important;
-      aspect-ratio: unset !important;
-    }
-
+    .f-two-col, .f-two-col-center { grid-template-columns: 1fr; gap: 36px; }
+    .f-photos { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .f-photos > * { flex: 0 0 160px; height: 200px; grid-column: unset !important; grid-row: unset !important; aspect-ratio: unset !important; }
     .f-nav-links { display: none; }
     .f-nav-burger { display: flex; flex-direction: column; gap: 5px; }
-
     .f-ta-stats { grid-template-columns: repeat(2, 1fr); }
   }
 
-  /* ── Mobile: ≤ 600px ──────────────────────────────────────────────────────── */
+  /* ── Mobile ≤ 600px ─────────────────────────────────────────────────────────── */
   @media (max-width: 600px) {
     .f-section { padding: 56px 20px; }
-
     .f-stats { grid-template-columns: 1fr; }
-
     .f-hero-photo { width: 120px; }
-
     .f-exp-body { padding-left: 16px; padding-bottom: 24px; }
-
     .f-contact-btns { flex-direction: column; align-items: stretch; }
     .f-contact-btns a { justify-content: center; }
-
     .f-ta-content { padding: 16px 16px 32px; }
     .f-ta-hdr     { padding: 14px 16px; }
     .f-ta-stats   { grid-template-columns: repeat(2, 1fr); }
+    .f-ta-actions { flex-direction: column; }
+    .f-ta-actions a, .f-ta-actions button { justify-content: center; text-align: center; }
   }
 `;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function Chip({ children, highlight }: { children: React.ReactNode; highlight?: boolean }) {
+  const { C } = useTheme();
   return (
     <span style={{
       ...sans,
@@ -177,9 +165,9 @@ function Chip({ children, highlight }: { children: React.ReactNode; highlight?: 
       fontSize: "0.72rem",
       fontWeight: 600,
       letterSpacing: "0.03em",
-      background: highlight ? C.accent + "20" : "rgba(255,255,255,0.06)",
+      background: highlight ? C.accent + "20" : "rgba(128,128,160,0.1)",
       color: highlight ? C.accent : C.dim,
-      border: `1px solid ${highlight ? C.accent + "40" : "rgba(255,255,255,0.08)"}`,
+      border: `1px solid ${highlight ? C.accent + "40" : C.border}`,
     }}>
       {children}
     </span>
@@ -187,6 +175,7 @@ function Chip({ children, highlight }: { children: React.ReactNode; highlight?: 
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
+  const { C } = useTheme();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 44 }}>
       <span style={{ width: 28, height: 2, background: C.accent, display: "block", borderRadius: 2, flexShrink: 0 }} />
@@ -197,8 +186,39 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Theme Toggle Button ───────────────────────────────────────────────────────
+function ThemeToggle() {
+  const { C, theme, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      aria-label="Toggle theme"
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      style={{
+        ...sans,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        width: 36, height: 36, borderRadius: 10,
+        background: C.lift,
+        border: `1px solid ${C.border}`,
+        cursor: "pointer",
+        fontSize: "1rem",
+        transition: "background 0.2s, border-color 0.2s",
+        flexShrink: 0,
+      }}
+      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = C.surface)}
+      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = C.lift)}
+    >
+      {theme === "dark"
+        ? <Sun size={15} strokeWidth={1.8} color={C.dim} />
+        : <Moon size={15} strokeWidth={1.8} color={C.dim} />
+      }
+    </button>
+  );
+}
+
 // ── Nav ───────────────────────────────────────────────────────────────────────
 function Nav() {
+  const { C, theme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -222,17 +242,20 @@ function Nav() {
     { id: "contact",    label: "Contact" },
   ];
 
+  const navBg = scrolled
+    ? theme === "dark" ? "rgba(12,12,16,0.94)" : "rgba(244,244,251,0.94)"
+    : "transparent";
+
   return (
     <nav style={{
       position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
       padding: "0 clamp(20px, 6vw, 100px)", height: 60,
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: scrolled ? "rgba(12,12,16,0.94)" : "transparent",
+      background: navBg,
       borderBottom: scrolled ? `1px solid ${C.border}` : "1px solid transparent",
       backdropFilter: scrolled ? "blur(16px)" : "none",
-      transition: "all 0.3s ease",
+      transition: "background 0.28s cubic-bezier(0.4,0,0.2,1), border-color 0.28s cubic-bezier(0.4,0,0.2,1), backdrop-filter 0.28s cubic-bezier(0.4,0,0.2,1)",
     }}>
-      {/* Wordmark */}
       <button onClick={() => go("hero")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
         <span style={{ ...display, fontSize: "1.15rem", fontWeight: 400, color: C.text }}>
           Raflie<em style={{ fontStyle: "italic", color: C.accent }}>.</em>
@@ -240,7 +263,7 @@ function Nav() {
       </button>
 
       {/* Desktop links */}
-      <div className="f-nav-links">
+      <div className="f-nav-links" style={{ alignItems: "center", gap: 28 }}>
         {links.map((l) => (
           <button key={l.id} onClick={() => go(l.id)}
             style={{ background: "none", border: "none", cursor: "pointer", ...sans, fontSize: "0.82rem", fontWeight: 500, color: C.muted, padding: 0, transition: "color 0.2s" }}
@@ -251,23 +274,26 @@ function Nav() {
         ))}
       </div>
 
-      {/* Mobile burger */}
-      <button onClick={() => setOpen(!open)} className="f-nav-burger"
-        style={{ background: "none", border: "none", cursor: "pointer", padding: 6 }}
-        aria-label="Toggle menu">
-        {open
-          ? <span style={{ ...sans, fontSize: "1.1rem", color: C.text, lineHeight: 1 }}>✕</span>
-          : [0,1,2].map((i) => (
-              <span key={i} style={{ width: 22, height: 1.5, background: C.text, display: "block", borderRadius: 2 }} />
-            ))
-        }
-      </button>
+      {/* Toggle + burger (always visible; burger hidden on desktop via CSS) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <ThemeToggle />
+        <button onClick={() => setOpen(!open)} className="f-nav-burger"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 6 }}
+          aria-label="Toggle menu">
+          {open
+            ? <span style={{ ...sans, fontSize: "1.1rem", color: C.text, lineHeight: 1 }}>✕</span>
+            : [0,1,2].map((i) => (
+                <span key={i} style={{ width: 22, height: 1.5, background: C.text, display: "block", borderRadius: 2 }} />
+              ))
+          }
+        </button>
+      </div>
 
-      {/* Mobile menu overlay */}
       {open && (
         <div style={{
           position: "fixed", top: 60, left: 0, right: 0,
-          background: "rgba(12,12,16,0.98)", backdropFilter: "blur(20px)",
+          background: theme === "dark" ? "rgba(12,12,16,0.98)" : "rgba(244,244,251,0.98)",
+          backdropFilter: "blur(20px)",
           borderBottom: `1px solid ${C.border}`,
           padding: "16px 20px 24px",
           display: "flex", flexDirection: "column", gap: 0,
@@ -279,19 +305,18 @@ function Nav() {
                 ...sans, fontSize: "1.1rem", fontWeight: 500, color: C.dim,
                 padding: "14px 0", textAlign: "left",
                 borderBottom: `1px solid ${C.border}`,
-                transition: "color 0.15s",
+                transition: "none",
               }}
               onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = C.text)}
               onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = C.dim)}>
               {l.label}
             </button>
           ))}
-          {/* Contact shortcut in mobile menu */}
           <a href="mailto:raflie01a@gmail.com"
             style={{
               ...sans, marginTop: 20, display: "block", textAlign: "center",
               padding: "13px 0", borderRadius: 10,
-              background: C.accent, color: C.bg,
+              background: C.accent, color: theme === "dark" ? "#0c0c10" : "#ffffff",
               fontWeight: 700, fontSize: "0.9rem", textDecoration: "none",
             }}>
             ✉ Get in touch
@@ -304,6 +329,7 @@ function Nav() {
 
 // ── Hero ──────────────────────────────────────────────────────────────────────
 function Hero() {
+  const { C, theme } = useTheme();
   return (
     <section id="hero" style={{
       minHeight: "100vh",
@@ -311,11 +337,8 @@ function Hero() {
       padding: "80px clamp(20px, 6vw, 100px) 60px",
     }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%" }}>
-
-        {/* Name + photo */}
         <div className="f-hero-grid">
           <div style={{ minWidth: 0 }}>
-            {/* Status dot */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, display: "block", boxShadow: `0 0 8px ${C.green}` }} />
               <span style={{ ...sans, fontSize: "0.72rem", color: C.muted, fontWeight: 500, letterSpacing: "0.07em", textTransform: "uppercase" }}>
@@ -323,21 +346,16 @@ function Hero() {
               </span>
             </div>
 
-            {/* Name */}
             <h1 style={{
               ...display,
               fontSize: "clamp(2.8rem, 8.5vw, 6.5rem)",
-              fontWeight: 400,
-              lineHeight: 1.0,
-              letterSpacing: "-0.01em",
-              color: C.text,
-              marginBottom: 24,
+              fontWeight: 400, lineHeight: 1.0, letterSpacing: "-0.01em",
+              color: C.text, marginBottom: 24,
             }}>
               Raflie<br />
               <em style={{ fontStyle: "italic", color: C.accent }}>Nurivansyah</em>
             </h1>
 
-            {/* Role chips */}
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
               <Chip highlight>IISMA Awardee '23</Chip>
               <Chip>Tech Enthusiast</Chip>
@@ -345,7 +363,6 @@ function Hero() {
               <Chip>Apple Technician</Chip>
             </div>
 
-            {/* Bio */}
             <p style={{ ...sans, fontSize: "0.98rem", color: C.dim, lineHeight: 1.82, maxWidth: 500, marginBottom: 36 }}>
               D3 Industrial Electrical Engineering at Madura State Polytechnic, GPA 3.58/4.00.
               IISMA 2023 awardee — exchange student at{" "}
@@ -353,17 +370,15 @@ function Hero() {
               Building at the intersection of technology and design.
             </p>
 
-            {/* CTAs */}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <a href="mailto:raflie01a@gmail.com"
                 style={{
                   ...sans,
                   display: "inline-flex", alignItems: "center", gap: 8,
                   padding: "12px 24px", borderRadius: 10,
-                  background: C.accent, color: C.bg,
+                  background: C.accent, color: theme === "dark" ? C.bg : "#fff",
                   fontWeight: 700, fontSize: "0.88rem",
-                  textDecoration: "none",
-                  transition: "background 0.2s, transform 0.15s",
+                  textDecoration: "none", transition: "none",
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentD; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = C.accent; (e.currentTarget as HTMLElement).style.transform = "none"; }}>
@@ -374,20 +389,19 @@ function Hero() {
                   ...sans,
                   display: "inline-flex", alignItems: "center", gap: 8,
                   padding: "12px 24px", borderRadius: 10,
-                  background: "rgba(255,255,255,0.06)", color: C.text,
+                  background: C.lift, color: C.text,
                   fontWeight: 600, fontSize: "0.88rem",
                   textDecoration: "none", border: `1px solid ${C.border}`,
-                  transition: "background 0.2s",
+                  transition: "none",
                 }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)")}>
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = C.surface)}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = C.lift)}>
                 LinkedIn ↗
               </a>
             </div>
           </div>
 
-          {/* Photo */}
-          <div className="f-hero-photo" style={{ background: C.surface }}>
+          <div className="f-hero-photo" style={{ background: C.surface, border: `1px solid ${C.border}` }}>
             <ImageWithFallback
               src={photo1}
               alt="Raflie at University of Strathclyde, Glasgow"
@@ -399,9 +413,9 @@ function Hero() {
         {/* Stats */}
         <div className="f-stats">
           {[
-            { value: "3.58", label: "GPA / 4.00",          sub: "Madura State Polytechnic" },
-            { value: "550+", label: "Weekly Customers",     sub: "Apple Service Provider" },
-            { value: "90%",  label: "Customer Satisfaction",sub: "Across all roles" },
+            { value: "3.58", label: "GPA / 4.00",           sub: "Madura State Polytechnic" },
+            { value: "550+", label: "Weekly Customers",      sub: "Apple Service Provider" },
+            { value: "90%",  label: "Customer Satisfaction", sub: "Across all roles" },
           ].map(({ value, label, sub }) => (
             <div key={label} style={{ background: C.surface, padding: "clamp(20px, 3vw, 36px)", textAlign: "center" }}>
               <p style={{ ...display, fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 400, color: C.accent, lineHeight: 1 }}>{value}</p>
@@ -410,7 +424,6 @@ function Hero() {
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );
@@ -418,12 +431,12 @@ function Hero() {
 
 // ── About ─────────────────────────────────────────────────────────────────────
 function About() {
+  const { C } = useTheme();
   return (
     <section id="about" style={{ borderTop: `1px solid ${C.border}` }}>
       <div className="f-section">
         <SectionLabel>About</SectionLabel>
         <div className="f-two-col">
-          {/* Left: bio */}
           <div>
             <h2 style={{ ...display, fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)", fontWeight: 400, lineHeight: 1.2, color: C.text, marginBottom: 24 }}>
               Tech meets<br /><em style={{ fontStyle: "italic", color: C.accent }}>creativity.</em>
@@ -436,7 +449,6 @@ function About() {
             </p>
           </div>
 
-          {/* Right: skills + contact card */}
           <div>
             <div style={{ ...sans, fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.muted, marginBottom: 16 }}>
               Skills &amp; Competencies
@@ -459,17 +471,13 @@ function About() {
             </div>
 
             <div style={{ padding: "20px 24px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
-              {[
-                { icon: "📍", primary: "Bangkalan, Jawa Timur, Indonesia", secondary: "+62 857 3164 8703 · raflie01a@gmail.com" },
-              ].map(({ icon, primary, secondary }) => (
-                <div key={primary} style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-                  <span style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: 1 }}>{icon}</span>
-                  <div>
-                    <p style={{ ...sans, fontSize: "0.87rem", fontWeight: 600, color: C.text }}>{primary}</p>
-                    <p style={{ ...sans, fontSize: "0.74rem", color: C.muted, marginTop: 2 }}>{secondary}</p>
-                  </div>
+              <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+                <span style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: 1 }}>📍</span>
+                <div>
+                  <p style={{ ...sans, fontSize: "0.87rem", fontWeight: 600, color: C.text }}>Bangkalan, Jawa Timur, Indonesia</p>
+                  <p style={{ ...sans, fontSize: "0.74rem", color: C.muted, marginTop: 2 }}>+62 857 3164 8703 · raflie01a@gmail.com</p>
                 </div>
-              ))}
+              </div>
               <div style={{ display: "flex", gap: 10 }}>
                 <span style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: 1 }}>🌐</span>
                 <a href="https://www.linkedin.com/in/raflie-nurivansyah" target="_blank" rel="noopener"
@@ -487,13 +495,12 @@ function About() {
 
 // ── IISMA ─────────────────────────────────────────────────────────────────────
 function IISMA() {
+  const { C } = useTheme();
   return (
     <section id="iisma" style={{ borderTop: `1px solid ${C.border}`, background: C.surface }}>
       <div className="f-section">
         <SectionLabel>Achievement Spotlight</SectionLabel>
         <div className="f-two-col-center">
-
-          {/* Text */}
           <div>
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 8,
@@ -532,21 +539,14 @@ function IISMA() {
             </div>
           </div>
 
-          {/* Photos */}
           <div className="f-photos">
             <div style={{ gridColumn: "1", gridRow: "1", borderRadius: 14, overflow: "hidden", aspectRatio: "3/4", background: C.lift }}>
-              <ImageWithFallback
-                src={photo3}
-                alt="Raflie at Indonesian Embassy, London"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
+              <ImageWithFallback src={photo3} alt="Raflie at Indonesian Embassy, London"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div style={{ gridColumn: "2", gridRow: "1 / 3", borderRadius: 14, overflow: "hidden", background: C.lift }}>
-              <ImageWithFallback
-                src={photo2}
-                alt="IISMA Indonesia students at University of Strathclyde"
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-              />
+              <ImageWithFallback src={photo2} alt="IISMA Indonesia students at University of Strathclyde"
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
             </div>
             <div style={{
               gridColumn: "1", gridRow: "2",
@@ -559,7 +559,6 @@ function IISMA() {
               <p style={{ ...sans, fontSize: "0.7rem", color: C.muted, marginTop: 2 }}>Glasgow, Scotland</p>
             </div>
           </div>
-
         </div>
       </div>
     </section>
@@ -608,6 +607,7 @@ const experiences = [
 ];
 
 function Experience() {
+  const { C } = useTheme();
   const [expanded, setExpanded] = useState<number | null>(0);
 
   return (
@@ -625,16 +625,13 @@ function Experience() {
                     width: "100%", background: "none", border: "none", cursor: "pointer",
                     padding: "24px 0",
                     display: "flex", alignItems: "center", gap: 16,
-                    textAlign: "left",
-                    transition: "opacity 0.2s",
+                    textAlign: "left", transition: "none",
                   }}
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.75")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
-
                   <span style={{ ...sans, fontSize: "0.68rem", fontWeight: 700, color: C.muted, minWidth: 24, letterSpacing: "0.05em" }}>
                     0{i + 1}
                   </span>
-
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                       <span style={{ ...display, fontSize: "clamp(1rem, 2.5vw, 1.45rem)", fontWeight: 400, color: C.text }}>
@@ -643,23 +640,16 @@ function Experience() {
                       <span style={{ ...sans, fontSize: "0.8rem", color: C.muted, whiteSpace: "nowrap" }}>— {exp.role}</span>
                     </div>
                   </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                    <span style={{ ...sans, fontSize: "0.75rem", color: C.muted, display: "none", whiteSpace: "nowrap" }}
-                      className="f-exp-period">{exp.period}</span>
-                    <span style={{
-                      width: 28, height: 28, borderRadius: "50%",
-                      background: isOpen ? C.accent : C.lift,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      color: isOpen ? C.bg : C.muted,
-                      fontSize: "1rem",
-                      transition: "all 0.2s", flexShrink: 0,
-                    }}>
-                      {isOpen ? "−" : "+"}
-                    </span>
-                  </div>
+                  <span style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    background: isOpen ? C.accent : C.lift,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    color: isOpen ? (C.bg) : C.muted,
+                    fontSize: "1rem", transition: "all 0.2s", flexShrink: 0,
+                  }}>
+                    {isOpen ? "−" : "+"}
+                  </span>
                 </button>
-
                 {isOpen && (
                   <div className="f-exp-body">
                     <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
@@ -685,7 +675,7 @@ function Experience() {
   );
 }
 
-// ── Projects ──────────────────────────────────────────────────────────────────
+// ── Projects data ─────────────────────────────────────────────────────────────
 const projects = [
   {
     number: "01",
@@ -713,15 +703,15 @@ const projects = [
   },
 ];
 
-// ── TA Detail Modal ───────────────────────────────────────────────────────────
-const TA_PRESENTATION = { label: "🎯 Lihat Presentasi TA", url: "https://presentasi-ta.vercel.app/" };
-
+// ── TA links ──────────────────────────────────────────────────────────────────
+const TA_PRESENTATION = { label: "🔗 Lihat Website TA", url: "https://ta-raflie-nurivansyah.vercel.app/" };
 const TA_DRIVES = [
   { label: "📁 Dokumentasi Pengerjaan", url: "https://drive.google.com/drive/folders/1S7NoR088X5DaCdLxzM2XtHSusuFoiayk" },
-  { label: "📊 Rekap Data Pengujian",    url: "https://drive.google.com/drive/folders/1yPCkfyzhHui20bvpzhG-B7z8Vre1P7Na" },
-  { label: "💻 Code Autopong",           url: "https://drive.google.com/drive/folders/1gcDdH9tvrbBjdR87syKsXYxbO97XCsRt" },
+  { label: "📊 Rekap Data Pengujian",   url: "https://drive.google.com/drive/folders/1yPCkfyzhHui20bvpzhG-B7z8Vre1P7Na" },
+  { label: "💻 Code Autopong",          url: "https://drive.google.com/drive/folders/1gcDdH9tvrbBjdR87syKsXYxbO97XCsRt" },
 ];
 
+// ── TA Detail Modal ───────────────────────────────────────────────────────────
 function TAModal({ onClose }: { onClose: () => void }) {
   const EE = { bg: "#050f08", surface: "#0a1a0e", accent: "#00d4aa", dim: "#7ecfb2", border: "rgba(0,212,170,0.15)" };
   return (
@@ -733,7 +723,6 @@ function TAModal({ onClose }: { onClose: () => void }) {
         border: `1px solid ${EE.accent}30`,
         boxShadow: `0 0 60px ${EE.accent}18`,
       }}>
-        {/* Header */}
         <div className="f-ta-hdr" style={{
           borderBottom: `1px solid ${EE.border}`,
           background: `linear-gradient(135deg, ${EE.surface} 0%, #0d1f12 100%)`,
@@ -752,7 +741,6 @@ function TAModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="f-ta-content">
-          {/* Title */}
           <h2 style={{ ...display, fontSize: "clamp(1.3rem, 3vw, 1.9rem)", fontWeight: 400, color: "#e8f8f2", lineHeight: 1.25, marginBottom: 8, letterSpacing: "0em" }}>
             Rancang Bangun Pelontar Bola Tenis Meja Otomatis Berbasis Arduino Yang Diintegrasikan Dengan Siaran Langsung <em style={{ fontStyle: "italic", color: EE.accent }}>TikTok</em> Sebagai Trigger
           </h2>
@@ -760,33 +748,32 @@ function TAModal({ onClose }: { onClose: () => void }) {
             Raflie Nurivansyah · NRP 33112101044 · D3 Teknik Listrik Industri — POLTERA Sampang
           </p>
 
-          {/* Presentation CTA */}
+          {/* Website TA CTA */}
           <a href={TA_PRESENTATION.url} target="_blank" rel="noopener"
             style={{
               ...sans, display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "14px 20px", borderRadius: 12, marginBottom: 20,
               background: "linear-gradient(135deg, rgba(0,212,170,0.18) 0%, rgba(0,212,170,0.08) 100%)",
               border: "1px solid rgba(0,212,170,0.4)",
-              textDecoration: "none",
-              transition: "background 0.2s",
+              textDecoration: "none", transition: "none",
             }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, rgba(0,212,170,0.28) 0%, rgba(0,212,170,0.14) 100%)")}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, rgba(0,212,170,0.18) 0%, rgba(0,212,170,0.08) 100%)")}>
             <div>
-              <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: "rgba(0,212,170,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>Live Presentation</p>
-              <p style={{ ...sans, fontSize: "0.95rem", fontWeight: 600, color: "#e8f8f2" }}>{TA_PRESENTATION.label}</p>
+              <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: "rgba(0,212,170,0.7)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 2 }}>Website Tugas Akhir</p>
+              <p style={{ ...sans, fontSize: "0.95rem", fontWeight: 600, color: "#e8f8f2", display: "flex", alignItems: "center", gap: 7 }}>
+                <ExternalLink size={14} strokeWidth={2} /> Lihat Website TA
+              </p>
             </div>
             <span style={{ fontSize: "1.3rem", color: "#00d4aa" }}>↗</span>
           </a>
 
-          {/* Supervisor */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
             {["Pembimbing I: A Labib Fardany Faisal, M.T.I.", "Pembimbing II: Muhammad Nur, S.Si., M.T."].map((s) => (
               <span key={s} style={{ ...sans, fontSize: "0.72rem", padding: "4px 12px", borderRadius: 8, background: EE.surface, color: EE.dim, border: `1px solid ${EE.border}` }}>{s}</span>
             ))}
           </div>
 
-          {/* Abstract */}
           <div style={{ borderRadius: 14, padding: "18px 20px", background: EE.surface, border: `1px solid ${EE.border}`, marginBottom: 24 }}>
             <p style={{ ...sans, fontSize: "0.72rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 10 }}>Abstrak</p>
             <p style={{ ...sans, fontSize: "0.9rem", color: EE.dim, lineHeight: 1.8 }}>
@@ -794,13 +781,12 @@ function TAModal({ onClose }: { onClose: () => void }) {
             </p>
           </div>
 
-          {/* Stats */}
           <div className="f-ta-stats">
             {[
               { value: "91.35%", label: "Tingkat Keberhasilan Like", sub: "190/208 data dieksekusi" },
               { value: "100%",   label: "Akurasi Gift 1 & 20 Koin", sub: "0 data loss" },
-              { value: "5.13s",  label: "Avg Response Time", sub: "Data Like (tercepat)" },
-              { value: "3 det",  label: "Durasi Kerja per Gift", sub: "Motor pelontar aktif" },
+              { value: "5.13s",  label: "Avg Response Time",         sub: "Data Like (tercepat)" },
+              { value: "3 det",  label: "Durasi Kerja per Gift",     sub: "Motor pelontar aktif" },
             ].map(({ value, label, sub }) => (
               <div key={label} style={{ borderRadius: 12, padding: "14px 16px", background: EE.surface, border: `1px solid ${EE.border}`, textAlign: "center" }}>
                 <p style={{ ...display, fontSize: "1.5rem", fontWeight: 400, color: EE.accent, lineHeight: 1 }}>{value}</p>
@@ -810,7 +796,6 @@ function TAModal({ onClose }: { onClose: () => void }) {
             ))}
           </div>
 
-          {/* Hardware */}
           <div style={{ marginBottom: 24 }}>
             <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Komponen Hardware</p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -820,7 +805,6 @@ function TAModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {/* System Flow */}
           <div style={{ borderRadius: 14, padding: "16px 20px", background: EE.surface, border: `1px solid ${EE.border}`, marginBottom: 24 }}>
             <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Alur Sistem</p>
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
@@ -837,7 +821,6 @@ function TAModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          {/* Drive Links */}
           <div>
             <p style={{ ...sans, fontSize: "0.7rem", fontWeight: 700, color: EE.accent, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 12 }}>Lampiran Proyek</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -848,7 +831,7 @@ function TAModal({ onClose }: { onClose: () => void }) {
                     padding: "12px 16px", borderRadius: 10,
                     background: "rgba(0,212,170,0.07)", border: `1px solid ${EE.accent}25`,
                     textDecoration: "none", color: EE.dim, fontSize: "0.88rem", fontWeight: 500,
-                    transition: "background 0.2s",
+                    transition: "none",
                   }}
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.14)")}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.07)")}>
@@ -864,16 +847,16 @@ function TAModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── TA Card (featured in Projects) ───────────────────────────────────────────
+// ── TA Card ───────────────────────────────────────────────────────────────────
 function TugasAkhirCard() {
+  const { C } = useTheme();
   const [hovered, setHovered] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
+  const EE_ACCENT = "#00d4aa";
   const EE_BG = hovered
     ? "linear-gradient(135deg, #050f08 0%, #0a1f0e 50%, #050f08 100%)"
     : `linear-gradient(135deg, ${C.surface} 0%, #111820 100%)`;
-
-  const EE_ACCENT = "#00d4aa";
   const EE_BORDER = hovered ? "rgba(0,212,170,0.35)" : C.border;
 
   return (
@@ -887,19 +870,28 @@ function TugasAkhirCard() {
           padding: "clamp(24px, 3vw, 36px)",
           marginBottom: 16,
           position: "relative", overflow: "hidden",
-          transition: "border-color 0.3s, background 0.4s, box-shadow 0.3s",
+          transition: "border-color 0.28s cubic-bezier(0.4,0,0.2,1), background 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.28s cubic-bezier(0.4,0,0.2,1)",
           boxShadow: hovered ? `0 0 40px rgba(0,212,170,0.1)` : "none",
           cursor: "default",
         }}>
-        {/* Circuit grid overlay when hovered */}
-        {hovered && (
-          <div style={{
-            position: "absolute", inset: 0, opacity: 0.04,
-            backgroundImage: "linear-gradient(rgba(0,212,170,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,170,1) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-            pointerEvents: "none",
-          }} />
-        )}
+
+        {/* Logo overlay on hover */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          display: "flex", alignItems: "center", justifyContent: "flex-end",
+          padding: "clamp(20px, 4vw, 48px)",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.45s ease",
+        }}>
+          <img src={logoTLI} alt="Logo TLI POLTERA"
+            style={{
+              width: "clamp(110px, 20vw, 200px)",
+              height: "clamp(110px, 20vw, 200px)",
+              objectFit: "contain",
+              opacity: 0.22,
+              filter: "drop-shadow(0 0 20px rgba(0,212,170,0.3))",
+            }} />
+        </div>
 
         <div style={{ position: "relative", zIndex: 1 }}>
           {/* Top row */}
@@ -912,18 +904,18 @@ function TugasAkhirCard() {
                 POLTERA · 2026
               </span>
             </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div className="f-ta-actions">
               <a href={TA_PRESENTATION.url} target="_blank" rel="noopener"
                 style={{
                   ...sans, display: "inline-flex", alignItems: "center", gap: 8,
                   padding: "9px 18px", borderRadius: 10,
                   background: EE_ACCENT, color: "#050f08",
                   fontWeight: 700, fontSize: "0.82rem", textDecoration: "none",
-                  transition: "opacity 0.2s",
+                  transition: "none", whiteSpace: "nowrap",
                 }}
                 onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = "0.85")}
                 onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = "1")}>
-                🎯 Presentasi ↗
+                <ExternalLink size={13} strokeWidth={2} style={{ flexShrink: 0 }} /> Link TA
               </a>
               <button onClick={() => setShowModal(true)}
                 style={{
@@ -932,7 +924,7 @@ function TugasAkhirCard() {
                   background: "rgba(0,212,170,0.12)", color: EE_ACCENT,
                   fontWeight: 600, fontSize: "0.82rem",
                   border: "1px solid rgba(0,212,170,0.3)", cursor: "pointer",
-                  transition: "background 0.2s",
+                  transition: "none", whiteSpace: "nowrap",
                 }}
                 onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.22)")}
                 onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "rgba(0,212,170,0.12)")}>
@@ -941,17 +933,14 @@ function TugasAkhirCard() {
             </div>
           </div>
 
-          {/* Title */}
-          <h3 style={{ ...display, fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", fontWeight: 400, color: hovered ? "#e8f8f2" : C.text, lineHeight: 1.3, marginBottom: 14, letterSpacing: "0em", transition: "color 0.3s" }}>
+          <h3 style={{ ...display, fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", fontWeight: 400, color: hovered ? "#e8f8f2" : C.text, lineHeight: 1.3, marginBottom: 14, letterSpacing: "0em", transition: "color 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
             Rancang Bangun <em style={{ fontStyle: "italic", color: EE_ACCENT }}>Autopong</em> — Pelontar Bola Tenis Meja Otomatis Berbasis Arduino &amp; TikTok Live
           </h3>
 
-          {/* Desc */}
-          <p style={{ ...sans, fontSize: "0.88rem", color: hovered ? "#7ecfb2" : C.dim, lineHeight: 1.75, marginBottom: 20, maxWidth: 680, transition: "color 0.3s" }}>
+          <p style={{ ...sans, fontSize: "0.88rem", color: hovered ? "#7ecfb2" : C.dim, lineHeight: 1.75, marginBottom: 20, maxWidth: 680, transition: "color 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
             Sistem IoT yang mengintegrasikan siaran langsung TikTok Live sebagai trigger alat mekanis. Gift dari penonton memicu motor pelontar bola tenis meja secara otomatis melalui protokol MQTT dan mikrokontroler ESP32.
           </p>
 
-          {/* Mini stats */}
           <div style={{ display: "flex", gap: "clamp(12px, 3vw, 28px)", flexWrap: "wrap", marginBottom: 20 }}>
             {[["91.35%", "Sukses Rate"], ["5.13s", "Avg Response"], ["100%", "Gift Accuracy"]].map(([v, l]) => (
               <div key={l} style={{ textAlign: "center" }}>
@@ -961,14 +950,12 @@ function TugasAkhirCard() {
             ))}
           </div>
 
-          {/* Tags */}
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 20 }}>
             {["Arduino", "ESP32", "MQTT", "TikTok API", "IoT", "Motor DC", "C++"].map((t) => (
-              <span key={t} style={{ ...sans, fontSize: "0.67rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, background: hovered ? "rgba(0,212,170,0.1)" : C.lift, color: hovered ? "#7ecfb2" : C.muted, border: `1px solid ${hovered ? "rgba(0,212,170,0.2)" : C.border}`, transition: "all 0.3s" }}>{t}</span>
+              <span key={t} style={{ ...sans, fontSize: "0.67rem", fontWeight: 600, padding: "3px 10px", borderRadius: 6, background: hovered ? "rgba(0,212,170,0.1)" : C.lift, color: hovered ? "#7ecfb2" : C.muted, border: `1px solid ${hovered ? "rgba(0,212,170,0.2)" : C.border}`, transition: "all 0.22s cubic-bezier(0.4,0,0.2,1)" }}>{t}</span>
             ))}
           </div>
 
-          {/* Drive links */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {TA_DRIVES.map((d) => (
               <a key={d.label} href={d.url} target="_blank" rel="noopener"
@@ -987,7 +974,9 @@ function TugasAkhirCard() {
   );
 }
 
+// ── Projects ──────────────────────────────────────────────────────────────────
 function Projects() {
+  const { C } = useTheme();
   return (
     <section id="projects" style={{ borderTop: `1px solid ${C.border}` }}>
       <div className="f-section">
@@ -1001,20 +990,19 @@ function Projects() {
                   borderRadius: 16, background: C.surface, border: `1px solid ${C.border}`,
                   padding: "clamp(20px, 3vw, 32px)", height: "100%",
                   display: "flex", flexDirection: "column",
-                  transition: "border-color 0.25s, transform 0.2s, background 0.25s",
+                  transition: "none",
                   cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = C.accent + "45";
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
-                  (e.currentTarget as HTMLElement).style.background = "#15151e";
+                  (e.currentTarget as HTMLElement).style.background = C.cardHover;
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.borderColor = C.border;
                   (e.currentTarget as HTMLElement).style.transform = "none";
                   (e.currentTarget as HTMLElement).style.background = C.surface;
                 }}>
-
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
                   <span style={{ ...sans, fontSize: "0.65rem", fontWeight: 700, color: C.muted, letterSpacing: "0.12em", textTransform: "uppercase" }}>
                     Project {p.number}
@@ -1065,13 +1053,12 @@ function Projects() {
 
 // ── Education ─────────────────────────────────────────────────────────────────
 function Education() {
+  const { C } = useTheme();
   return (
     <section id="education" style={{ borderTop: `1px solid ${C.border}`, background: C.surface }}>
       <div className="f-section">
         <SectionLabel>Education</SectionLabel>
         <div className="f-two-col" style={{ alignItems: "stretch" }}>
-
-          {/* Madura State Polytechnic */}
           <div style={{
             borderRadius: 18, padding: "clamp(24px, 3vw, 36px)",
             background: C.bg, border: `1px solid ${C.border}`,
@@ -1102,7 +1089,6 @@ function Education() {
             </div>
           </div>
 
-          {/* SMAN 1 Arosbaya */}
           <div style={{
             borderRadius: 18, padding: "clamp(24px, 3vw, 36px)",
             background: C.bg, border: `1px solid ${C.border}`,
@@ -1132,11 +1118,11 @@ function Education() {
 
 // ── Contact ───────────────────────────────────────────────────────────────────
 function Contact() {
+  const { C, theme } = useTheme();
   return (
     <section id="contact" style={{ borderTop: `1px solid ${C.border}` }}>
       <div className="f-section" style={{ textAlign: "center" }}>
         <SectionLabel>Contact</SectionLabel>
-
         <h2 style={{
           ...display,
           fontSize: "clamp(2.2rem, 7vw, 5rem)",
@@ -1145,7 +1131,6 @@ function Contact() {
         }}>
           Let's work<br /><em style={{ fontStyle: "italic", color: C.accent }}>together.</em>
         </h2>
-
         <p style={{ ...sans, fontSize: "0.97rem", color: C.dim, lineHeight: 1.78, maxWidth: 440, margin: "0 auto 44px" }}>
           Open to internships, collaborations, and full-time opportunities. Feel free to reach out anytime.
         </p>
@@ -1156,10 +1141,9 @@ function Contact() {
               ...sans,
               display: "inline-flex", alignItems: "center", gap: 10,
               padding: "14px 28px", borderRadius: 12,
-              background: C.accent, color: "#0c0c10",
+              background: C.accent, color: theme === "dark" ? "#0c0c10" : "#fff",
               fontWeight: 700, fontSize: "0.92rem",
-              textDecoration: "none",
-              transition: "background 0.2s, transform 0.15s",
+              textDecoration: "none", transition: "none",
             }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.accentD; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = C.accent; (e.currentTarget as HTMLElement).style.transform = "none"; }}>
@@ -1173,7 +1157,7 @@ function Contact() {
               background: C.lift, color: C.text,
               fontWeight: 600, fontSize: "0.92rem",
               textDecoration: "none", border: `1px solid ${C.border}`,
-              transition: "background 0.2s",
+              transition: "none",
             }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = C.surface)}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = C.lift)}>
@@ -1187,7 +1171,7 @@ function Contact() {
               background: C.lift, color: C.text,
               fontWeight: 600, fontSize: "0.92rem",
               textDecoration: "none", border: `1px solid ${C.border}`,
-              transition: "background 0.2s",
+              transition: "none",
             }}
             onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = C.surface)}
             onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = C.lift)}>
@@ -1195,12 +1179,10 @@ function Contact() {
           </a>
         </div>
 
-        {/* Footer */}
         <div style={{
           paddingTop: 32, borderTop: `1px solid ${C.border}`,
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          flexWrap: "wrap", gap: 12,
-          textAlign: "left",
+          flexWrap: "wrap", gap: 12, textAlign: "left",
         }}>
           <span style={{ ...display, fontSize: "1.1rem", fontWeight: 400, color: C.muted }}>
             Raflie<em style={{ fontStyle: "italic", color: C.accent }}>.</em>
@@ -1219,21 +1201,37 @@ function Contact() {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 export default function App() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const C = theme === "dark" ? DARK : LIGHT;
+  const toggle = () => setTheme((t) => t === "dark" ? "light" : "dark");
+
   useEffect(() => {
     document.title = "Raflie Nurivansyah's Portfolio";
   }, []);
 
   return (
-    <div style={{ background: C.bg, color: C.text, minHeight: "100vh", overflowX: "hidden" }}>
-      <style>{STYLES}</style>
-      <Nav />
-      <Hero />
-      <About />
-      <IISMA />
-      <Experience />
-      <Projects />
-      <Education />
-      <Contact />
-    </div>
+    <ThemeCtx.Provider value={{ C, theme, toggle }}>
+      <div
+        style={{
+          background: C.bg,
+          color: C.text,
+          minHeight: "100vh",
+          overflowX: "hidden",
+          transition: "background 0.32s cubic-bezier(0.4,0,0.2,1), color 0.32s cubic-bezier(0.4,0,0.2,1)",
+          // CSS var for stats gap color (used in STYLES string)
+          ["--stats-gap" as string]: C.statsGap,
+        }}
+      >
+        <style>{STYLES}</style>
+        <Nav />
+        <Hero />
+        <About />
+        <IISMA />
+        <Experience />
+        <Projects />
+        <Education />
+        <Contact />
+      </div>
+    </ThemeCtx.Provider>
   );
 }
